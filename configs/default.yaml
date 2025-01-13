@@ -1,0 +1,48 @@
+model: fedsheaf
+dataset: Cora
+mode: disjoint
+base_path: .
+data_path: data/datasets
+checkpt_path: checkpoints
+log_path: logs
+
+gpu: "0"
+seed: 123
+n_clients: 5
+n_rnds: 10
+frac: 1.0
+
+client_lr: 0.02
+client_weight_decay: 0.0005
+client_hidden_dim: 128
+client_vector_epochs: 30
+client_train_epochs: 5
+client_dropout: 0.3
+
+server_lr: 0.02
+server_weight_decay: 0.0005
+server_sheaf_decay: 0.0005
+server_d: 1
+server_layers: 4
+server_normalised: true
+server_deg_normalised: false
+server_linear: true
+server_second_linear: false
+server_hidden_channels: 20
+server_input_dropout: 0.0
+server_dropout: 0.7
+server_use_act: true
+server_sheaf_act: tanh
+
+HN_hidden_dim: 64
+server_hn_lr: 0.01
+hn_dropout: 0.3
+
+max_t: 1.0
+left_weights: true
+right_weights: true
+add_lp: false
+add_hp: false
+orth: householder
+edge_weights: true
+sparse_learner: true
