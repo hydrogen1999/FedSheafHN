@@ -46,3 +46,6 @@ add_hp: false
 orth: householder
 edge_weights: true
 sparse_learner: true
+
+attack_frac: 0.2   # 20% client updates bị drop do nghi ngờ tấn công
+attack_tau: 1.5    # norm delta > 1.5 => drop
