@@ -3,5 +3,5 @@
 from fl.manager import FLManager
 
 def fl_main(args):
-    fm = FLManager(args)
-    fm.start()
+    manager = FLManager(args)
+    manager.start()

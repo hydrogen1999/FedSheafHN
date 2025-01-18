@@ -13,14 +13,9 @@ import models.neural_sheaf.lib.laplace as lap
 
 
 class SheafLearner(nn.Module):
-    """Base model that learns a sheaf from the features and the graph structure."""
     def __init__(self):
-        super(SheafLearner, self).__init__()
+        super().__init__()
         self.L = None
-
-    @abstractmethod
-    def forward(self, x, edge_index):
-        raise NotImplementedError()
 
     def set_L(self, weights):
         self.L = weights.clone().detach()
@@ -29,32 +24,26 @@ class SheafLearner(nn.Module):
 class LocalConcatSheafLearner(SheafLearner):
     """Learns a sheaf by concatenating the local node features and passing them through a linear layer + activation."""
 
-    def __init__(self, in_channels: int, out_shape: Tuple[int, ...], sheaf_act="tanh"):
-        super(LocalConcatSheafLearner, self).__init__()
-        assert len(out_shape) in [1, 2]
+    def __init__(self, in_channels, out_shape, sheaf_act='tanh'):
+        super().__init__()
         self.out_shape = out_shape
-        self.linear1 = torch.nn.Linear(in_channels*2, int(np.prod(out_shape)), bias=False)
-
-        if sheaf_act == 'id':
+        self.linear1 = nn.Linear(in_channels*2, int(np.prod(out_shape)), bias=False)
+        if sheaf_act=='id':
             self.act = lambda x: x
-        elif sheaf_act == 'tanh':
+        elif sheaf_act=='tanh':
             self.act = torch.tanh
-        elif sheaf_act == 'elu':
+        elif sheaf_act=='elu':
             self.act = F.elu
         else:
             raise ValueError(f"Unsupported act {sheaf_act}")
 
     def forward(self, x, edge_index):
         row, col = edge_index
-        x_row = torch.index_select(x, dim=0, index=row)
-        x_col = torch.index_select(x, dim=0, index=col)
+        x_row = torch.index_select(x, 0, row)
+        x_col = torch.index_select(x, 0, col)
         maps = self.linear1(torch.cat([x_row, x_col], dim=1))
         maps = self.act(maps)
-
-        # sign = maps.sign()
-        # maps = maps.abs().clamp(0.05, 1.0) * sign
-
-        if len(self.out_shape) == 2:
+        if len(self.out_shape)==2:
             return maps.view(-1, self.out_shape[0], self.out_shape[1])
         else:
             return maps.view(-1, self.out_shape[0])
@@ -63,47 +52,34 @@ class LocalConcatSheafLearner(SheafLearner):
 class LocalConcatSheafLearnerVariant(SheafLearner):
     """Learns a sheaf by concatenating the local node features and passing them through a linear layer + activation."""
 
-    def __init__(self, d: int, hidden_channels: int, out_shape: Tuple[int, ...], sheaf_act="tanh"):
-        super(LocalConcatSheafLearnerVariant, self).__init__()
-        assert len(out_shape) in [1, 2]
-        self.out_shape = out_shape
+    def __init__(self, d, hidden_channels, out_shape, sheaf_act='tanh'):
+        super().__init__()
         self.d = d
         self.hidden_channels = hidden_channels
-        self.linear1 = torch.nn.Linear(hidden_channels * 2, int(np.prod(out_shape)), bias=False)
-        # self.linear2 = torch.nn.Linear(self.d, 1, bias=False)
+        self.out_shape = out_shape
+        self.linear1 = nn.Linear(hidden_channels*2, int(np.prod(out_shape)), bias=False)
 
-        # std1 = 1.414 * math.sqrt(2. / (hidden_channels * 2 + 1))
-        # std2 = 1.414 * math.sqrt(2. / (d + 1))
-        #
-        # nn.init.normal_(self.linear1.weight, 0.0, std1)
-        # nn.init.normal_(self.linear2.weight, 0.0, std2)
-
-        if sheaf_act == 'id':
+        if sheaf_act=='id':
             self.act = lambda x: x
-        elif sheaf_act == 'tanh':
+        elif sheaf_act=='tanh':
             self.act = torch.tanh
-        elif sheaf_act == 'elu':
+        elif sheaf_act=='elu':
             self.act = F.elu
         else:
             raise ValueError(f"Unsupported act {sheaf_act}")
 
     def forward(self, x, edge_index):
         row, col = edge_index
+        x_row = torch.index_select(x, 0, row)
+        x_col = torch.index_select(x, 0, col)
 
-        x_row = torch.index_select(x, dim=0, index=row)
-        x_col = torch.index_select(x, dim=0, index=col)
         x_cat = torch.cat([x_row, x_col], dim=-1)
-        x_cat = x_cat.reshape(-1, self.d, self.hidden_channels * 2).sum(dim=1)
+        x_cat = x_cat.view(-1, self.d, self.hidden_channels*2).sum(dim=1)
 
-        x_cat = self.linear1(x_cat)
+        maps = self.linear1(x_cat)
+        maps = self.act(maps)
 
-        # x_cat = x_cat.t().reshape(-1, self.d)
-        # x_cat = self.linear2(x_cat)
-        # x_cat = x_cat.reshape(-1, edge_index.size(1)).t()
-
-        maps = self.act(x_cat)
-
-        if len(self.out_shape) == 2:
+        if len(self.out_shape)==2:
             return maps.view(-1, self.out_shape[0], self.out_shape[1])
         else:
             return maps.view(-1, self.out_shape[0])

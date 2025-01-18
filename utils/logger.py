@@ -14,7 +14,5 @@ class Logger:
 
     def print(self, message):
         now = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-        msg = f"[{now}][{self.args['model']}][gpu:{self.gpu_id}]"
-        msg += "[server]" if self.is_server else f"[client:{self.c_id}]"
-        msg += f" {message}"
-        print(msg)
+        role = "server" if self.is_server else f"client:{self.c_id}"
+        print(f"[{now}][{self.args['model']}][gpu:{self.gpu_id}][{role}] {message}")

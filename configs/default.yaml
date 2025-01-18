@@ -1,16 +1,20 @@
 model: fedsheaf
-dataset: Cora
 mode: disjoint
+dataset: Cora
+
 base_path: .
-data_path: data/datasets
-checkpt_path: checkpoints
-log_path: logs
+data_path: ./datasets
+checkpt_path: ./checkpoints/disjoint
+log_path: ./logs/disjoint
 
 gpu: "0"
 seed: 123
 n_clients: 5
 n_rnds: 10
 frac: 1.0
+
+aggregator: sheaf
+param_gen: hypernetwork
 
 client_lr: 0.02
 client_weight_decay: 0.0005

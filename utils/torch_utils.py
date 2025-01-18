@@ -1,9 +1,8 @@
 # utils/torch_utils.py
 
 import os
-import json
 import torch
-import numpy as np
+import json
 from collections import OrderedDict
 
 def torch_save(base_dir, filename, data):
@@ -16,7 +15,6 @@ def torch_load(base_dir, filename):
     return torch.load(fpath, map_location='cpu')
 
 def get_state_dict(model):
-    # Chuyển sang CPU np array
     sd = OrderedDict()
     for k,v in model.state_dict().items():
         sd[k] = v.cpu().clone()
