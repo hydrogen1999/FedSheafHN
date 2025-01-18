@@ -1,5 +1,4 @@
-# Copyright 2022 Twitter, Inc.
-# SPDX-License-Identifier: Apache-2.0
+
 
 # Changes for FedSheafHN:
 # [WF 1]: Define parameters.
